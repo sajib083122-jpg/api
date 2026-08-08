@@ -8,6 +8,8 @@ from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import serializers
 
+from rest_framework.pagination import PageNumberPagination
+
 # Create your views here.
 
 # User Serializer
@@ -53,13 +55,19 @@ class RegisterView(APIView):
             status=status.HTTP_201_CREATED
         )
 
+
 class BookListView(APIView):
     def get(self, request):
-        books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data)
-
-
+        books = Book.objects.all().order_by('id')
+        
+        # Pagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 5  # প্রতি পেজে ৫টি
+        result_page = paginator.paginate_queryset(books, request)
+        serializer = BookSerializer(result_page, many=True)
+        
+        return paginator.get_paginated_response(serializer.data)
+    
     def post(self, request):
         serializer = BookSerializer(data=request.data)
         if serializer.is_valid():
