@@ -56,26 +56,29 @@ class RegisterView(APIView):
         )
 
 
+
 class BookListView(APIView):
     def get(self, request):
-        books = Book.objects.all().order_by('id')
+        books = Book.objects.all().order_by('-id')
         
-        # Pagination
         paginator = PageNumberPagination()
-        paginator.page_size = 5  # প্রতি পেজে ৫টি
+        paginator.page_size = 5
         result_page = paginator.paginate_queryset(books, request)
-        serializer = BookSerializer(result_page, many=True)
+        
+        # ✅ Context পাস করুন (এটা গুরুত্বপূর্ণ)
+        serializer = BookSerializer(result_page, many=True, context={'request': request})
         
         return paginator.get_paginated_response(serializer.data)
     
     def post(self, request):
-        serializer = BookSerializer(data=request.data)
+        # ✅ Context পাস করুন
+        serializer = BookSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+    
 class BookDetailView(APIView):
     def get(self, request, pk):
         try:
@@ -83,9 +86,9 @@ class BookDetailView(APIView):
         except Book.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = BookSerializer(book)
+        # ✅ Context পাস করুন
+        serializer = BookSerializer(book, context={'request': request})
         return Response(serializer.data)
-
 
     def put(self, request, pk):
         try:
@@ -93,12 +96,12 @@ class BookDetailView(APIView):
         except Book.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = BookSerializer(book, data=request.data)
+        # ✅ Context পাস করুন
+        serializer = BookSerializer(book, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def delete(self, request, pk):
         try:
@@ -107,4 +110,4 @@ class BookDetailView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         book.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)    
+        return Response(status=status.HTTP_204_NO_CONTENT)
