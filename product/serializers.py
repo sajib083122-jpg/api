@@ -1,20 +1,3 @@
-# from rest_framework import serializers
-# from .models import Book
-
-# class BookSerializer(serializers.ModelSerializer):
-#     cover_image_url = serializers.SerializerMethodField()
-    
-#     class Meta:
-#         model = Book
-#         fields = ['id', 'book_name', 'price', 'description', 'cover_image', 'cover_image_url', 'created_at']
-#         read_only_fields = ['cover_image_url', 'created_at']
-    
-#     def get_cover_image_url(self, obj):
-#         if obj.cover_image:
-#             request = self.context.get('request')
-#             return request.build_absolute_uri(obj.cover_image.url) if request else obj.cover_image.url
-#         return None
-
 
 from rest_framework import serializers
 from .models import Book
